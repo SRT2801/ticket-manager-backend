@@ -8,7 +8,10 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { TicketPriority, TicketStatus } from '../../../common/enums/ticket.enums';
+import {
+  TicketPriority,
+  TicketStatus,
+} from '../../../common/enums/ticket.enums';
 
 @Entity('tickets')
 export class Ticket {
@@ -33,7 +36,7 @@ export class Ticket {
     enum: TicketStatus,
     default: TicketStatus.OPEN,
   })
-  status! : TicketStatus;
+  status!: TicketStatus;
 
   @ManyToOne(() => User, (user) => user.tickets, { eager: false })
   @JoinColumn({ name: 'user_id' })
@@ -42,9 +45,9 @@ export class Ticket {
   @Column({ name: 'user_id' })
   userId!: number;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @Column({ name: 'created_at', type: 'timestamptz', nullable: false })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @Column({ name: 'updated_at', type: 'timestamptz', nullable: false })
   updatedAt!: Date;
 }

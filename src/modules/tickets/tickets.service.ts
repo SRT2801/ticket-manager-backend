@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ticket } from './entities/ticket.entity';
@@ -9,6 +13,14 @@ import { PaginatedTicketsDto } from './dto/paginated-tickets.dto';
 import { TicketResponseDto } from './dto/ticket-response.dto';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { TicketStatus } from '../../common/enums/ticket.enums';
+import { toZonedTime } from 'date-fns-tz';
+
+const COLOMBIA_TIMEZONE = 'America/Bogota';
+
+function getColombiaNow(): Date {
+  const now = new Date();
+  return toZonedTime(now, COLOMBIA_TIMEZONE);
+}
 
 @Injectable()
 export class TicketsService {
@@ -17,10 +29,16 @@ export class TicketsService {
     private ticketsRepository: Repository<Ticket>,
   ) {}
 
-  async create(userId: number, dto: CreateTicketDto): Promise<TicketResponseDto> {
+  async create(
+    userId: number,
+    dto: CreateTicketDto,
+  ): Promise<TicketResponseDto> {
+    const now = getColombiaNow();
     const ticket = this.ticketsRepository.create({
       ...dto,
       userId,
+      createdAt: now,
+      updatedAt: now,
     });
     const saved = await this.ticketsRepository.save(ticket);
     return this.toResponseDto(saved);
@@ -35,11 +53,11 @@ export class TicketsService {
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
-    
+
     if (userRole !== UserRole.ADMIN) {
       whereClause.userId = userId;
     }
-    
+
     if (status) {
       whereClause.status = status;
     }
@@ -48,7 +66,7 @@ export class TicketsService {
       where: whereClause,
       skip,
       take: limit,
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'ASC' },
     });
 
     return {
@@ -62,7 +80,11 @@ export class TicketsService {
     };
   }
 
-  async findOne(userId: number, userRole: UserRole, ticketId: number): Promise<TicketResponseDto> {
+  async findOne(
+    userId: number,
+    userRole: UserRole,
+    ticketId: number,
+  ): Promise<TicketResponseDto> {
     const ticket = await this.ticketsRepository.findOne({
       where: { id: ticketId },
     });
@@ -97,11 +119,14 @@ export class TicketsService {
     }
 
     ticket.status = dto.status;
+    ticket.updatedAt = getColombiaNow();
     const updated = await this.ticketsRepository.save(ticket);
     return this.toResponseDto(updated);
   }
 
-  async getStats(userId: number): Promise<{ status: TicketStatus; count: number }[]> {
+  async getStats(
+    userId: number,
+  ): Promise<{ status: TicketStatus; count: number }[]> {
     const results = await this.ticketsRepository
       .createQueryBuilder('ticket')
       .select('ticket.status', 'status')
