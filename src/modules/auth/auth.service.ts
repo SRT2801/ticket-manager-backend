@@ -12,6 +12,11 @@ import { RegisterAdminDto } from './dto/register-admin.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { UserRole } from '../../common/enums/user-role.enum';
+import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
+import { CurrentUserPayload } from '../../common/interfaces/current-user.interface';
+import { User } from '../users/entities/user.entity';
+
+type UserProfile = Pick<User, 'id' | 'email' | 'name' | 'role'>;
 
 @Injectable()
 export class AuthService {
@@ -33,21 +38,17 @@ export class AuthService {
       role: UserRole.USER,
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role };
+    const profile: UserProfile = { id: user.id, email: user.email, name: user.name, role: user.role };
     return {
       accessToken: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: profile,
     };
   }
 
   async registerAdmin(
     dto: RegisterAdminDto,
-    requestingUser: { id: number; role: UserRole },
+    requestingUser: CurrentUserPayload,
   ): Promise<AuthResponseDto> {
     if (requestingUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can create other admins');
@@ -70,15 +71,11 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role };
+    const profile: UserProfile = { id: user.id, email: user.email, name: user.name, role: user.role };
     return {
       accessToken: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: profile,
     };
   }
 
@@ -93,15 +90,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role };
+    const profile: UserProfile = { id: user.id, email: user.email, name: user.name, role: user.role };
     return {
       accessToken: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: profile,
     };
   }
 }

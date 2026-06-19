@@ -3,6 +3,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConfig } from '../../../config';
 import { UsersService } from '../../users/users.service';
+import { JwtPayload } from '../../../common/interfaces/jwt-payload.interface';
+import { CurrentUserPayload } from '../../../common/interfaces/current-user.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: number; email: string; role?: string }) {
+  async validate(payload: JwtPayload): Promise<CurrentUserPayload & { email: string; name: string }> {
     const user = await this.usersService.findById(payload.sub);
     if (!user) {
       throw new UnauthorizedException('Invalid token');

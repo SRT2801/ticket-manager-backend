@@ -19,6 +19,7 @@ import { ReportsService } from './reports.service';
 import { ExportTicketsQueryDto } from './dto/export-tickets-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUserPayload } from '../../common/interfaces/current-user.interface';
 import { UserRole } from '../../common/enums/user-role.enum';
 
 @ApiTags('reports')
@@ -43,7 +44,7 @@ export class ReportsController {
   @ApiResponse({ status: 401, description: 'No autorizado - Token inválido' })
   @ApiResponse({ status: 404, description: 'No se encontraron tickets' })
   async exportTickets(
-    @CurrentUser() user: { id: number; role: UserRole },
+    @CurrentUser() user: CurrentUserPayload,
     @Query() filters: ExportTicketsQueryDto,
     @Res() res: Response,
   ) {
@@ -85,7 +86,7 @@ export class ReportsController {
     description: 'No tienes permiso para exportar este ticket',
   })
   async exportTicketById(
-    @CurrentUser() user: { id: number; role: UserRole },
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
   ) {

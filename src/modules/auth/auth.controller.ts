@@ -22,6 +22,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUserPayload } from '../../common/interfaces/current-user.interface';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -66,7 +67,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 409, description: 'El email ya está registrado' })
   async registerAdmin(
-    @CurrentUser() user: { id: number; role: UserRole },
+    @CurrentUser() user: CurrentUserPayload,
     @Body() dto: RegisterAdminDto,
   ): Promise<AuthResponseDto> {
     return this.authService.registerAdmin(dto, user);

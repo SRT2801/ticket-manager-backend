@@ -10,6 +10,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUserPayload } from '../../common/interfaces/current-user.interface';
 import { UserRole } from '../../common/enums/user-role.enum';
 
 @ApiTags('users')
@@ -31,7 +32,7 @@ export class UsersController {
   })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async getProfile(
-    @CurrentUser() user: { id: number; role: UserRole },
+    @CurrentUser() user: CurrentUserPayload,
   ): Promise<UserProfileDto> {
     const fullUser = await this.usersService.findById(user.id);
     if (!fullUser) {
@@ -55,7 +56,7 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async updateProfile(
-    @CurrentUser() user: { id: number; role: UserRole },
+    @CurrentUser() user: CurrentUserPayload,
     @Body() dto: UpdateUserDto,
   ): Promise<UserProfileDto> {
     const { password, ...profile } = await this.usersService.update(
