@@ -39,7 +39,9 @@ export class ReportsController {
     description:
       'Archivo Excel generado correctamente con los headers de Content-Disposition',
   })
+  @ApiResponse({ status: 400, description: 'Filtros de fecha inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado - Token inválido' })
+  @ApiResponse({ status: 404, description: 'No se encontraron tickets' })
   async exportTickets(
     @CurrentUser() user: { id: number; role: UserRole },
     @Query() filters: ExportTicketsQueryDto,
