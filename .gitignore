@@ -46,6 +46,15 @@ lerna-debug.log*
 .temp
 .tmp
 
+# Third-party tools and agents
+.agents/
+.skills/
+.tools/
+
+# Agent instructions
+AGENTS.md
+skills-lock.json
+
 # Runtime data
 pids
 *.pid
