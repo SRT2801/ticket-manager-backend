@@ -4,6 +4,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { UsersModule } from './modules/users/users.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { databaseConfig } from './database/database.config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SeedService } from './database/seed.service';
@@ -16,6 +17,7 @@ import { User } from './modules/users/entities/user.entity';
     AuthModule,
     UsersModule,
     TicketsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [
