@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import { hash } from 'bcrypt';
 import { UserRole } from '../../common/enums/user-role.enum';
 
 export interface AdminSeedConfig {
@@ -24,7 +24,7 @@ export async function seedAdmin(userRepository: any): Promise<void> {
     return;
   }
 
-  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+  const hashedPassword = await hash(adminPassword, 10);
 
   const admin = userRepository.create({
     email: adminEmail,

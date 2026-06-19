@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import { hash } from 'bcrypt';
 import { User } from './entities/user.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 
@@ -51,7 +51,7 @@ export class UsersService {
     }
 
     if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
+      data.password = await hash(data.password, 10);
     }
 
     await this.usersRepository.update(id, data);
