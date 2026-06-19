@@ -126,7 +126,7 @@ export class TicketsService {
 
   async getStats(
     userId: number,
-  ): Promise<{ status: TicketStatus; count: number }[]> {
+  ): Promise<{ byStatus: { status: TicketStatus; count: number }[]; recent: TicketResponseDto[] }> {
     const results = await this.ticketsRepository
       .createQueryBuilder('ticket')
       .select('ticket.status', 'status')
@@ -135,10 +135,19 @@ export class TicketsService {
       .groupBy('ticket.status')
       .getRawMany();
 
-    return results.map((r) => ({
-      status: r.status as TicketStatus,
-      count: parseInt(r.count, 10),
-    }));
+    const recentTickets = await this.ticketsRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      take: 5,
+    });
+
+    return {
+      byStatus: results.map((r) => ({
+        status: r.status as TicketStatus,
+        count: parseInt(r.count, 10),
+      })),
+      recent: recentTickets.map((t) => this.toResponseDto(t)),
+    };
   }
 
   private toResponseDto(ticket: Ticket): TicketResponseDto {
