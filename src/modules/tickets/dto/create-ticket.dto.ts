@@ -9,7 +9,7 @@ export class CreateTicketDto {
   })
   @IsString()
   @IsNotEmpty()
-  title!: string;
+  title: string;
 
   @ApiProperty({
     example:
@@ -18,7 +18,7 @@ export class CreateTicketDto {
   })
   @IsString()
   @IsNotEmpty()
-  description!: string;
+  description: string;
 
   @ApiPropertyOptional({
     enum: TicketPriority,

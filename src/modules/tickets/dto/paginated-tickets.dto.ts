@@ -4,16 +4,16 @@ import { TicketResponseDto } from './ticket-response.dto';
 
 class PaginationMeta {
   @ApiProperty({ example: 25, description: 'Total de tickets' })
-  total!: number;
+  total: number;
 
   @ApiProperty({ example: 1, description: 'Página actual' })
-  page!: number;
+  page: number;
 
   @ApiProperty({ example: 10, description: 'Tickets por página' })
-  limit!: number;
+  limit: number;
 
   @ApiProperty({ example: 3, description: 'Total de páginas' })
-  totalPages!: number;
+  totalPages: number;
 }
 
 export class PaginatedTicketsDto {
@@ -21,11 +21,11 @@ export class PaginatedTicketsDto {
     type: [TicketResponseDto],
     description: 'Lista de tickets',
   })
-  data!: TicketResponseDto[];
+  data: TicketResponseDto[];
 
   @ApiProperty({
     type: PaginationMeta,
     description: 'Metadatos de paginación',
   })
-  pagination!: PaginationMeta;
+  pagination: PaginationMeta;
 }

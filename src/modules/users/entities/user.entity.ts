@@ -12,30 +12,30 @@ import { UserRole } from '../../../common/enums/user-role.enum';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @Column({ unique: true })
-  email!: string;
+  email: string;
 
   @Column()
-  password!: string;
+  password: string;
 
   @Column()
-  name!: string;
+  name: string;
 
   @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.USER,
   })
-  role!: UserRole;
+  role: UserRole;
 
   @OneToMany(() => Ticket, (ticket) => ticket.user)
   tickets!: Ticket[];
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt!: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt!: Date;
+  updatedAt: Date;
 }

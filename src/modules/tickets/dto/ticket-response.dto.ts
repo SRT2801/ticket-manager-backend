@@ -12,43 +12,43 @@ export class TicketResponseDto {
     example: 'Error al iniciar sesión',
     description: 'Título del ticket',
   })
-  title!: string;
+  title: string;
 
   @ApiProperty({
     example: 'El usuario no puede iniciar sesión...',
     description: 'Descripción detallada del problema',
   })
-  description!: string;
+  description: string;
 
   @ApiProperty({
     enum: TicketPriority,
     example: TicketPriority.HIGH,
     description: 'Prioridad del ticket',
   })
-  priority!: TicketPriority;
+  priority: TicketPriority;
 
   @ApiProperty({
     enum: TicketStatus,
     example: TicketStatus.OPEN,
     description: 'Estado actual del ticket',
   })
-  status!: TicketStatus;
+  status: TicketStatus;
 
   @ApiProperty({
     example: 1,
     description: 'ID del usuario propietario del ticket',
   })
-  userId!: number;
+  userId: number;
 
   @ApiProperty({
     example: '2026-06-18T10:30:00.000Z',
     description: 'Fecha de creación del ticket',
   })
-  createdAt!: Date;
+  createdAt: Date;
 
   @ApiProperty({
     example: '2026-06-18T14:45:00.000Z',
     description: 'Fecha de última actualización',
   })
-  updatedAt!: Date;
+  updatedAt: Date;
 }

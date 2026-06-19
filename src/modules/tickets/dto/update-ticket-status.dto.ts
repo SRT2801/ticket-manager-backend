@@ -9,5 +9,5 @@ export class UpdateTicketStatusDto {
     description: 'Nuevo estado del ticket',
   })
   @IsEnum(TicketStatus)
-  status!: TicketStatus;
+  status: TicketStatus;
 }

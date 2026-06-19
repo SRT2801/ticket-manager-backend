@@ -8,7 +8,7 @@ export class RegisterDto {
   })
   @IsEmail()
   @IsNotEmpty()
-  email!: string;
+  email: string;
 
   @ApiProperty({
     example: 'Password123!',
@@ -17,7 +17,7 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
-  password!: string;
+  password: string;
 
   @ApiProperty({
     example: 'Juan Pérez',
@@ -25,5 +25,5 @@ export class RegisterDto {
   })
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  name: string;
 }
