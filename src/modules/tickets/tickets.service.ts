@@ -50,7 +50,7 @@ export class TicketsService {
     userRole: UserRole,
     filters: ListTicketsDto,
   ): Promise<PaginatedTicketsDto> {
-    const { status, page = 1, limit = 10 } = filters;
+    const { status, priority, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
@@ -61,6 +61,10 @@ export class TicketsService {
 
     if (status) {
       whereClause.status = status;
+    }
+
+    if (priority) {
+      whereClause.priority = priority;
     }
 
     const [tickets, total] = await this.ticketsRepository.findAndCount({

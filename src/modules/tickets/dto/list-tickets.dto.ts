@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TicketStatus } from '../../../common/enums/ticket.enums';
+import { TicketStatus, TicketPriority } from '../../../common/enums/ticket.enums';
 
 export class ListTicketsDto {
   @ApiPropertyOptional({
@@ -12,6 +12,15 @@ export class ListTicketsDto {
   @IsOptional()
   @IsEnum(TicketStatus)
   status?: TicketStatus;
+
+  @ApiPropertyOptional({
+    enum: TicketPriority,
+    example: TicketPriority.HIGH,
+    description: 'Filtrar por prioridad del ticket',
+  })
+  @IsOptional()
+  @IsEnum(TicketPriority)
+  priority?: TicketPriority;
 
   @ApiPropertyOptional({
     example: 1,
