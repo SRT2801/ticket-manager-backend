@@ -20,7 +20,9 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  app.enableCors();
+  app.enableCors({
+    exposedHeaders: ['Content-Disposition'],
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Ticket Manager API')
