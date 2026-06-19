@@ -13,7 +13,7 @@ import { UserRole } from '../../common/enums/user-role.enum';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {

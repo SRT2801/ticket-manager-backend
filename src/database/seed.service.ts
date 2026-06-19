@@ -8,7 +8,7 @@ import { seedAdmin } from './seeds/admin.seed';
 export class SeedService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async onModuleInit() {

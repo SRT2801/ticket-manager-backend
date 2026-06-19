@@ -26,7 +26,7 @@ function getColombiaNow(): Date {
 export class TicketsService {
   constructor(
     @InjectRepository(Ticket)
-    private ticketsRepository: Repository<Ticket>,
+    private readonly ticketsRepository: Repository<Ticket>,
   ) {}
 
   async create(

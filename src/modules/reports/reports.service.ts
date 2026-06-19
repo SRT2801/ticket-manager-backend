@@ -16,7 +16,7 @@ import { TicketStatus, TicketPriority } from '../../common/enums/ticket.enums';
 export class ReportsService {
   constructor(
     @InjectRepository(Ticket)
-    private ticketsRepository: Repository<Ticket>,
+    private readonly ticketsRepository: Repository<Ticket>,
   ) {}
 
   private formatDate(date: Date): string {
