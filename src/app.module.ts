@@ -1,10 +1,29 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_FILTER } from '@nestjs/core';
+import { UsersModule } from './modules/users/users.module';
+import { TicketsModule } from './modules/tickets/tickets.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { databaseConfig } from './database/database.config';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { SeedService } from './database/seed.service';
+import { User } from './modules/users/entities/user.entity';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    TypeOrmModule.forRoot(databaseConfig()),
+    TypeOrmModule.forFeature([User]),
+    AuthModule,
+    UsersModule,
+    TicketsModule,
+  ],
+  controllers: [],
+  providers: [
+    SeedService,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
