@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -31,11 +36,19 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return {
       accessToken: this.jwtService.sign(payload),
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     };
   }
 
-  async registerAdmin(dto: RegisterAdminDto, requestingUser: { id: number; role: UserRole }): Promise<AuthResponseDto> {
+  async registerAdmin(
+    dto: RegisterAdminDto,
+    requestingUser: { id: number; role: UserRole },
+  ): Promise<AuthResponseDto> {
     if (requestingUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can create other admins');
     }
@@ -46,7 +59,9 @@ export class AuthService {
     }
 
     if (dto.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only admin role can be created via this endpoint');
+      throw new ForbiddenException(
+        'Only admin role can be created via this endpoint',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -58,7 +73,12 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return {
       accessToken: this.jwtService.sign(payload),
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     };
   }
 
@@ -76,7 +96,12 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return {
       accessToken: this.jwtService.sign(payload),
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     };
   }
 }
