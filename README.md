@@ -1,98 +1,199 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Ticket Manager - Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Sistema de gestión de tickets de soporte con reportería en Excel. Backend desarrollado con NestJS, TypeORM y PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- **TypeScript** + **NestJS** (framework backend)
+- **TypeORM** (ORM con migraciones)
+- **PostgreSQL 16** (base de datos)
+- **JWT** (autenticación sin estado)
+- **ExcelJS** (generación de reportes `.xlsx`)
+- **Swagger** (documentación de API)
+- **Docker Compose** (entorno de desarrollo)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Requisitos
 
-## Project setup
+- Node.js 20+
+- Docker Desktop con Docker Compose v2
+
+## Instalación y ejecución
+
+### 1. Clonar e instalar dependencias
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+### 2. Configurar variables de entorno
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+Editar `.env` si es necesario. Las credenciales por defecto son:
+
+| Variable | Valor por defecto | Nota |
+|----------|-------------------|------|
+| `DATABASE_HOST` | `localhost` | `localhost` para desarrollo local, `postgres` en Docker |
+| `DATABASE_PORT` | `5432` | |
+| `POSTGRES_USER` | `postgres` | |
+| `POSTGRES_PASSWORD` | `postgres` | |
+| `POSTGRES_DB` | `ticket_manager` | |
+| `JWT_SECRET` | (cambiar en producción) | |
+| `JWT_EXPIRATION` | `24h` | |
+| `PORT` | `3000` | |
+| `ADMIN_EMAIL` | `admin@ticket-manager.com` | |
+| `ADMIN_PASSWORD` | `Admin123!` | |
+
+> **Importante:** El `docker-compose.yml` sobrescribe `DATABASE_HOST=postgres` al ejecutar en Docker.
+> No modifiques `.env` para Docker — el compose se encarga de los valores correctos para el contenedor.
+
+### 3. Levantar el entorno con Docker
 
 ```bash
-# unit tests
-$ npm run test
+# Construir imágenes
+npm run docker:build
 
-# e2e tests
-$ npm run test:e2e
+# Iniciar servicios (postgres + app)
+npm run docker:up
 
-# test coverage
-$ npm run test:cov
+# Ver logs
+npm run docker:logs
+
+# Detener servicios
+npm run docker:down
 ```
 
-## Deployment
+El backend estará disponible en `http://localhost:3000`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 4. Desarrollo local (sin Docker para la app)
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# La base de datos sigue en Docker
+docker compose up -d postgres
+
+# Asegurar que .env tenga DATABASE_HOST=localhost
+# Luego iniciar NestJS con hot-reload
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+> **Nota:** `docker compose up -d postgres` levanta solo la BD. Si Docker ya está corriendo
+> la app también, detenela primero: `docker compose stop app`
 
-## Resources
+## Credenciales del admin seed
 
-Check out a few resources that may come in handy when working with NestJS:
+Al iniciar la aplicación, se crea automáticamente un usuario administrador:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- **Email:** `admin@ticket-manager.com`
+- **Password:** `Admin123!`
 
-## Support
+## Documentación Swagger
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Disponible en: `http://localhost:3000/api/docs`
 
-## Stay in touch
+## Endpoints
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Auth
 
-## License
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| POST | `/auth/register` | No | Registrar nuevo usuario |
+| POST | `/auth/login` | No | Iniciar sesión (retorna JWT) |
+| POST | `/auth/register/admin` | Admin | Crear nuevo administrador |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Users
+
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| GET | `/users/profile` | JWT | Obtener perfil del usuario |
+| PATCH | `/users/profile` | JWT | Actualizar perfil |
+
+### Tickets
+
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| POST | `/tickets` | JWT | Crear ticket |
+| GET | `/tickets` | JWT | Listar tickets (paginado, filtros) |
+| GET | `/tickets/stats` | JWT | Dashboard (totales por estado + 5 recientes) |
+| GET | `/tickets/:id` | JWT | Ver detalle de ticket |
+| PATCH | `/tickets/:id/status` | JWT | Cambiar estado |
+
+**Filtros soportados en `GET /tickets`:**
+- `status` — `OPEN`, `IN_PROGRESS`, `CLOSED`
+- `page` — número de página (default: 1)
+- `limit` — resultados por página (default: 10)
+
+### Reports
+
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| GET | `/reports/tickets/export` | JWT | Exportar tickets a Excel (.xlsx) |
+| GET | `/reports/tickets/:id/export` | JWT | Exportar detalle de un ticket |
+
+**Filtros para exportación:**
+- `status` — filtrar por estado
+- `startDate` — fecha inicio (`YYYY-MM-DD`)
+- `endDate` — fecha fin (`YYYY-MM-DD`)
+
+## Roles y permisos
+
+| Rol | Permisos |
+|-----|----------|
+| `USER` | Crear, ver y actualizar sus propios tickets |
+| `ADMIN` | Ver y actualizar todos los tickets. Crear otros admins. |
+
+## Estructura del proyecto
+
+```
+src/
+├── config/              # Configuración centralizada
+├── common/              # Componentes compartidos
+│   ├── decorators/      # @CurrentUser, @Roles
+│   ├── enums/           # UserRole, TicketStatus, TicketPriority
+│   ├── exceptions/      # CustomException
+│   ├── filters/         # HttpExceptionFilter global
+│   ├── guards/          # RolesGuard
+│   └── interceptors/    # ResponseInterceptor (formato estandarizado)
+├── database/            # Config TypeORM, migraciones, seeds
+├── modules/
+│   ├── auth/            # Autenticación (registro, login, JWT)
+│   ├── users/           # Perfil de usuario
+│   ├── tickets/         # CRUD de tickets + estadísticas
+│   └── reports/         # Exportación a Excel
+├── app.module.ts
+└── main.ts
+```
+
+## Decisiones de arquitectura
+
+- **DTOs con `class-validator`** para validación de entrada en todos los endpoints.
+- **JWT sin refresh token** — expiración de 24h configurable.
+- **Manejo centralizado de errores** mediante `HttpExceptionFilter` global.
+- **Formato estandarizado de respuestas** con `ResponseInterceptor`: `{ statusCode, message, data, timestamp, path }`.
+- **Migraciones TypeORM** en lugar de `synchronize: true` (entorno productivo).
+- **Seed automático** del admin al iniciar la aplicación.
+- **Módulo `reports` separado** — la lógica de exportación Excel está aislada del módulo de tickets.
+
+## Reportes Excel
+
+El archivo generado incluye:
+- **Hoja 1 — Tickets:** tabla con ID, Título, Descripción, Usuario, Email, Prioridad, Estado, Fecha de creación y actualización. Filas coloreadas según prioridad y estado.
+- **Hoja 2 — Estadísticas:** resumen con total de tickets, distribución por estado y por prioridad con porcentajes.
+
+## Comandos disponibles
+
+```bash
+npm run start:dev      # Desarrollo con hot-reload
+npm run build           # Compilar TypeScript
+npm run lint            # ESLint
+npm run docker:build    # Construir imágenes Docker
+npm run docker:up       # Iniciar servicios
+npm run docker:down     # Detener servicios
+npm run docker:logs     # Ver logs de todos los servicios
+```
+
+## Puerto
+
+- App: `3000`
+- PostgreSQL: `5432`
