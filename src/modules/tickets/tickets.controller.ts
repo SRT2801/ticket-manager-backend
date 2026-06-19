@@ -62,14 +62,14 @@ export class TicketsController {
   }
 
   @Get('stats')
-  @ApiOperation({ summary: 'Obtener estadísticas de tickets' })
+  @ApiOperation({ summary: 'Obtener estadísticas de tickets y tickets recientes' })
   @ApiResponse({
     status: 200,
-    description: 'Lista de estadísticas por estado',
+    description: 'Estadísticas por estado y últimos 5 tickets',
   })
   async getStats(
     @CurrentUser() user: { id: number; role: UserRole },
-  ): Promise<{ status: TicketStatus; count: number }[]> {
+  ): Promise<{ byStatus: { status: TicketStatus; count: number }[]; recent: TicketResponseDto[] }> {
     return this.ticketsService.getStats(user.id);
   }
 
