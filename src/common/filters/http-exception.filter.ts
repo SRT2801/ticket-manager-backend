@@ -4,42 +4,69 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { CustomException } from '../exceptions/custom.exception';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<{ url: string }>();
+    const timestamp = new Date().toISOString();
+    const path = request.url;
 
-    const status = exception instanceof HttpException
-      ? exception.getStatus()
-      : HttpStatus.INTERNAL_SERVER_ERROR;
+    switch (true) {
+      case exception instanceof HttpException: {
+        const httpException = exception;
+        const status = httpException.getStatus();
 
-    const message = exception instanceof HttpException
-      ? this.getMessage(exception)
-      : 'Internal server error';
+        const responseBody = httpException.getResponse();
+        let errorMessage = 'Error occurred';
 
-    response.status(status).json({
-      statusCode: status,
-      message,
-      timestamp: new Date().toISOString(),
-    });
-  }
+        if (typeof responseBody === 'object' && responseBody !== null) {
+          const typedResponse = responseBody as Record<string, unknown>;
+          if ('message' in typedResponse) {
+            const message = typedResponse.message;
+            if (Array.isArray(message)) {
+              errorMessage =
+                message.length > 0 ? String(message[0]) : errorMessage;
+            } else {
+              errorMessage = String(message);
+            }
+          }
+        } else if (typeof responseBody === 'string') {
+          errorMessage = responseBody;
+        }
 
-  private getMessage(exception: HttpException): string {
-    const exceptionResponse = exception.getResponse();
-    if (typeof exceptionResponse === 'string') {
-      return exceptionResponse;
-    }
-    if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
-      const response = exceptionResponse as Record<string, unknown>;
-      if (Array.isArray(response.message)) {
-        return response.message.join(', ');
+        return response.status(status).json({
+          statusCode: status,
+          message: errorMessage,
+          timestamp,
+          path,
+        });
       }
-      return (response.message as string) || exception.message;
+
+      case exception instanceof CustomException: {
+        const customException = exception;
+        return response.status(customException.statusCode).json({
+          statusCode: customException.statusCode,
+          message: customException.message,
+          timestamp,
+          path,
+        });
+      }
+
+      default:
+        Logger.error('Unhandled exception: ', exception);
+        return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Internal server error',
+          timestamp,
+          path,
+        });
     }
-    return exception.message;
   }
 }
