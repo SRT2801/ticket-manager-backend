@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Ticket } from './entities/ticket.entity';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { ListTicketsDto } from './dto/list-tickets.dto';
 import { PaginatedTicketsDto } from './dto/paginated-tickets.dto';
 import { TicketResponseDto } from './dto/ticket-response.dto';
@@ -119,6 +120,32 @@ export class TicketsService {
     }
 
     ticket.status = dto.status;
+    ticket.updatedAt = getColombiaNow();
+    const updated = await this.ticketsRepository.save(ticket);
+    return this.toResponseDto(updated);
+  }
+
+  async updateTicket(
+    userId: number,
+    userRole: UserRole,
+    ticketId: number,
+    dto: UpdateTicketDto,
+  ): Promise<TicketResponseDto> {
+    const ticket = await this.ticketsRepository.findOne({
+      where: { id: ticketId },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+
+    if (userRole !== UserRole.ADMIN && ticket.userId !== userId) {
+      throw new ForbiddenException('You can only update your own tickets');
+    }
+
+    if (dto.title !== undefined) ticket.title = dto.title;
+    if (dto.description !== undefined) ticket.description = dto.description;
+    if (dto.priority !== undefined) ticket.priority = dto.priority;
     ticket.updatedAt = getColombiaNow();
     const updated = await this.ticketsRepository.save(ticket);
     return this.toResponseDto(updated);

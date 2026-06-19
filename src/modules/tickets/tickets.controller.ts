@@ -18,6 +18,7 @@ import {
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { ListTicketsDto } from './dto/list-tickets.dto';
 import { TicketResponseDto } from './dto/ticket-response.dto';
 import { PaginatedTicketsDto } from './dto/paginated-tickets.dto';
@@ -87,6 +88,22 @@ export class TicketsController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<TicketResponseDto> {
     return this.ticketsService.findOne(user.id, user.role, id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar campos de un ticket' })
+  @ApiResponse({
+    status: 200,
+    description: 'Ticket actualizado correctamente',
+    type: TicketResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Ticket no encontrado' })
+  async updateTicket(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTicketDto,
+  ): Promise<TicketResponseDto> {
+    return this.ticketsService.updateTicket(user.id, user.role, id, dto);
   }
 
   @Patch(':id/status')
