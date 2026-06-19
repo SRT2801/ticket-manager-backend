@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -20,7 +24,12 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async create(data: { email: string; password: string; name: string; role?: UserRole }): Promise<User> {
+  async create(data: {
+    email: string;
+    password: string;
+    name: string;
+    role?: UserRole;
+  }): Promise<User> {
     const user = this.usersRepository.create(data);
     return this.usersRepository.save(user);
   }
