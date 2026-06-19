@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER } from '@nestjs/core';
 import { UsersModule } from './modules/users/users.module';
@@ -12,6 +13,7 @@ import { User } from './modules/users/entities/user.entity';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(databaseConfig()),
     TypeOrmModule.forFeature([User]),
     AuthModule,
