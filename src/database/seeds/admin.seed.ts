@@ -10,6 +10,11 @@ export async function seedAdmin(userRepository: any): Promise<void> {
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
 
+  if (!adminEmail || !adminPassword) {
+    console.log('ADMIN_EMAIL or ADMIN_PASSWORD not set, skipping seed...');
+    return;
+  }
+
   const existingAdmin = await userRepository.findOne({
     where: { email: adminEmail },
   });
