@@ -1,9 +1,8 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:20 AS build
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 RUN npm ci
 
@@ -11,20 +10,16 @@ COPY . .
 
 RUN npm run build
 
-# Stage 2: Production
-FROM node:20-alpine
+
+
+FROM node:20
 
 WORKDIR /app
 
-RUN apk update && apk upgrade --no-cache
-
-COPY package*.json ./
-
-RUN npm ci --only=production
-
-COPY --from=builder /app/dist/src ./dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./
 
 EXPOSE 3000
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
