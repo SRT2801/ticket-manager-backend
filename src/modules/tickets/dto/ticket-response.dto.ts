@@ -41,6 +41,12 @@ export class TicketResponseDto {
   userId: number;
 
   @ApiProperty({
+    example: 'Admin',
+    description: 'Nombre del usuario propietario del ticket',
+  })
+  userName: string;
+
+  @ApiProperty({
     example: '2026-06-18T10:30:00.000Z',
     description: 'Fecha de creación del ticket',
   })

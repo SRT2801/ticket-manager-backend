@@ -72,6 +72,7 @@ export class TicketsService {
       skip,
       take: limit,
       order: { createdAt: 'ASC' },
+      relations: { user: true },
     });
 
     return {
@@ -92,6 +93,7 @@ export class TicketsService {
   ): Promise<TicketResponseDto> {
     const ticket = await this.ticketsRepository.findOne({
       where: { id: ticketId },
+      relations: { user: true },
     });
 
     if (!ticket) {
@@ -157,19 +159,26 @@ export class TicketsService {
 
   async getStats(
     userId: number,
+    userRole: UserRole,
   ): Promise<{ byStatus: { status: TicketStatus; count: number }[]; recent: TicketResponseDto[] }> {
     const results = await this.ticketsRepository
       .createQueryBuilder('ticket')
       .select('ticket.status', 'status')
       .addSelect('COUNT(*)', 'count')
-      .where('ticket.userId = :userId', { userId })
+      .where(userRole !== UserRole.ADMIN ? 'ticket.userId = :userId' : '1=1', { userId })
       .groupBy('ticket.status')
       .getRawMany();
 
+    const recentWhere: any = {};
+    if (userRole !== UserRole.ADMIN) {
+      recentWhere.userId = userId;
+    }
+
     const recentTickets = await this.ticketsRepository.find({
-      where: { userId },
+      where: recentWhere,
       order: { createdAt: 'DESC' },
       take: 5,
+      relations: { user: true },
     });
 
     return {
@@ -189,6 +198,7 @@ export class TicketsService {
       priority: ticket.priority,
       status: ticket.status,
       userId: ticket.userId,
+      userName: ticket.user?.name || `Usuario #${ticket.userId}`,
       createdAt: ticket.createdAt,
       updatedAt: ticket.updatedAt,
     };

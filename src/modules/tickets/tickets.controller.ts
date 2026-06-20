@@ -72,7 +72,7 @@ export class TicketsController {
   async getStats(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<{ byStatus: { status: TicketStatus; count: number }[]; recent: TicketResponseDto[] }> {
-    return this.ticketsService.getStats(user.id);
+    return this.ticketsService.getStats(user.id, user.role);
   }
 
   @Get(':id')
