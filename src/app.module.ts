@@ -7,13 +7,14 @@ import { TicketsModule } from './modules/tickets/tickets.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { databaseConfig } from './database/database.config';
+import { jwtConfig } from './config/auth/jwt.config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SeedService } from './database/seed.service';
 import { User } from './modules/users/entities/user.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, load: [jwtConfig] }),
     TypeOrmModule.forRoot(databaseConfig()),
     TypeOrmModule.forFeature([User]),
     AuthModule,
