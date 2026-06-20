@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsEnum, IsDateString } from 'class-validator';
-import { TicketStatus } from '../../../common/enums/ticket.enums';
+import { TicketStatus, TicketPriority } from '../../../common/enums/ticket.enums';
 
 export class ExportTicketsQueryDto {
   @ApiPropertyOptional({
@@ -11,6 +11,15 @@ export class ExportTicketsQueryDto {
   @IsOptional()
   @IsEnum(TicketStatus)
   status?: TicketStatus;
+
+  @ApiPropertyOptional({
+    enum: TicketPriority,
+    example: TicketPriority.HIGH,
+    description: 'Filtrar tickets por prioridad',
+  })
+  @IsOptional()
+  @IsEnum(TicketPriority)
+  priority?: TicketPriority;
 
   @ApiPropertyOptional({
     example: '2026-06-01',

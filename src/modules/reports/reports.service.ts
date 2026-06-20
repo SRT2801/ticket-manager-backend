@@ -44,6 +44,10 @@ export class ReportsService {
       whereClause.status = filters.status;
     }
 
+    if (filters.priority) {
+      whereClause.priority = filters.priority;
+    }
+
     if (filters.startDate || filters.endDate) {
       if (
         filters.startDate &&
