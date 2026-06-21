@@ -90,9 +90,9 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
     const filledWidth = (barWidth * stats.resolutionRate) / 100;
 
     doc.font('Helvetica').fontSize(10).fillColor('#64748b')
-      .text('Tasa de resolucion', margin, y);
+      .text('Tasa de resolucion', margin, y, { width: contentWidth - 60, continued: true });
     doc.font('Helvetica-Bold').fontSize(14).fillColor('#10B981')
-      .text(`${stats.resolutionRate}%`, pageWidth - margin, y, { width: 50, align: 'right' });
+      .text(`  ${stats.resolutionRate}%`, { align: 'right' });
 
     y += 22;
 
@@ -150,10 +150,10 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
           doc.roundedRect(margin - 4, y - 2, contentWidth + 8, 26, 4).fill('#fafbfc');
         }
 
-        // Title
+        // Title (constrained width, stops before priority column)
         doc.font('Helvetica').fontSize(10).fillColor('#334155');
-        const titleText = ticket.title.length > 48 ? ticket.title.substring(0, 45) + '...' : ticket.title;
-        doc.text(titleText, colTitle + 4, y);
+        const titleText = ticket.title.length > 40 ? ticket.title.substring(0, 38) + '...' : ticket.title;
+        doc.text(titleText, colTitle + 4, y, { width: colPriority - colTitle - 20, height: 20, ellipsis: true });
 
         // Priority with colored dot
         const pColor = priorityColor(ticket.priority);
