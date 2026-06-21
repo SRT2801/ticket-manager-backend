@@ -114,8 +114,8 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
 
     // Column positions (A4 = 595pt wide, margin=50)
     const colTitle = margin;
-    const colPriority = margin + 280;
-    const colStatus = margin + 390;
+    const colPriority = margin + 260;
+    const colStatus = margin + 360;
     const colDate = pageWidth - margin;
 
     // Table header
@@ -159,17 +159,17 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
         // Priority with colored dot
         const pColor = priorityColor(ticket.priority);
         doc.circle(colPriority + 6, y + 6, 4).fill(pColor);
-        doc.font('Helvetica').fontSize(9).fillColor('#475569').text(priorityLabel(ticket.priority), colPriority + 16, y);
+        doc.font('Helvetica').fontSize(9).fillColor('#475569').text(priorityLabel(ticket.priority), colPriority + 16, y, { width: 70 });
 
         // Status with colored dot
         const sColor = statusColor(ticket.status);
         doc.circle(colStatus + 6, y + 6, 4).fill(sColor);
-        doc.font('Helvetica').fontSize(9).fillColor('#475569').text(statusLabel(ticket.status), colStatus + 16, y);
+        doc.font('Helvetica').fontSize(9).fillColor('#475569').text(statusLabel(ticket.status), colStatus + 16, y, { width: 70 });
 
         // Date (right-aligned at colDate)
         const dateStr = ticket.createdAt;
         const dateW = doc.widthOfString(dateStr);
-        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8').text(dateStr, colDate - dateW + 16, y);
+        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8').text(dateStr, colDate - dateW, y);
 
         y += 26;
       });
