@@ -112,10 +112,10 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
     doc.font('Helvetica-Bold').fontSize(14).fillColor('#1e293b').text('Tickets Recientes', margin, y);
     y += 25;
 
-    // Column positions
+    // Column positions (A4 = 595pt wide, margin=50)
     const colTitle = margin;
-    const colPriority = margin + 300;
-    const colStatus = margin + 400;
+    const colPriority = margin + 280;
+    const colStatus = margin + 390;
     const colDate = pageWidth - margin;
 
     // Table header
@@ -123,7 +123,7 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
     doc.text('TICKET', colTitle, y);
     doc.text('PRIORIDAD', colPriority, y);
     doc.text('ESTADO', colStatus, y);
-    doc.text('CREADO', colDate, y, { width: 100, align: 'right' });
+    doc.text('CREADO', colDate - 80, y);
 
     y += 16;
 
@@ -150,23 +150,26 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
           doc.roundedRect(margin - 4, y - 2, contentWidth + 8, 26, 4).fill('#fafbfc');
         }
 
-        // Title (constrained width, stops before priority column)
+        // Title (constrained width)
         doc.font('Helvetica').fontSize(10).fillColor('#334155');
-        const titleText = ticket.title.length > 40 ? ticket.title.substring(0, 38) + '...' : ticket.title;
+        const maxTitleChars = 36;
+        const titleText = ticket.title.length > maxTitleChars ? ticket.title.substring(0, maxTitleChars - 2) + '...' : ticket.title;
         doc.text(titleText, colTitle + 4, y, { width: colPriority - colTitle - 20, height: 20, ellipsis: true });
 
         // Priority with colored dot
         const pColor = priorityColor(ticket.priority);
         doc.circle(colPriority + 6, y + 6, 4).fill(pColor);
-        doc.font('Helvetica').fontSize(10).fillColor('#475569').text(priorityLabel(ticket.priority), colPriority + 16, y);
+        doc.font('Helvetica').fontSize(9).fillColor('#475569').text(priorityLabel(ticket.priority), colPriority + 16, y);
 
         // Status with colored dot
         const sColor = statusColor(ticket.status);
         doc.circle(colStatus + 6, y + 6, 4).fill(sColor);
-        doc.font('Helvetica').fontSize(10).fillColor('#475569').text(statusLabel(ticket.status), colStatus + 16, y);
+        doc.font('Helvetica').fontSize(9).fillColor('#475569').text(statusLabel(ticket.status), colStatus + 16, y);
 
-        // Date
-        doc.font('Helvetica').fontSize(10).fillColor('#94a3b8').text(ticket.createdAt, colDate, y, { width: 120, align: 'right' });
+        // Date (right-aligned at colDate)
+        const dateStr = ticket.createdAt;
+        const dateW = doc.widthOfString(dateStr);
+        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8').text(dateStr, colDate - dateW + 16, y);
 
         y += 26;
       });
