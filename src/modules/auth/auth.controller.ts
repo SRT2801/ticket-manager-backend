@@ -17,6 +17,7 @@ import { RegisterDto } from './dto/register.dto';
 import { RegisterAdminDto } from './dto/register-admin.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { UserDto } from './dto/auth-response.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -32,16 +33,16 @@ export class AuthController {
   @Post('register')
   @ApiOperation({
     summary: 'Registrar nuevo usuario',
-    description: 'Crea un nuevo usuario con rol USER',
+    description: 'Crea un nuevo usuario con rol USER. No retorna token — debe iniciar sesión luego.',
   })
   @ApiResponse({
     status: 201,
     description: 'Usuario registrado correctamente',
-    type: AuthResponseDto,
+    type: UserDto,
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'El email ya está registrado' })
-  async register(@Body() dto: RegisterDto): Promise<AuthResponseDto> {
+  async register(@Body() dto: RegisterDto): Promise<UserDto> {
     return this.authService.register(dto);
   }
 
@@ -57,7 +58,7 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'Administrador registrado correctamente',
-    type: AuthResponseDto,
+    type: UserDto,
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
@@ -69,7 +70,7 @@ export class AuthController {
   async registerAdmin(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: RegisterAdminDto,
-  ): Promise<AuthResponseDto> {
+  ): Promise<UserDto> {
     return this.authService.registerAdmin(dto, user);
   }
 
