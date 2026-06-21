@@ -41,7 +41,7 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
     const chunks: Buffer[] = [];
     const doc = new PDFDocument({
       size: 'A4',
-      margin: 40,
+      margin: 50,
       bufferPages: true,
     });
 
@@ -50,105 +50,134 @@ function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buff
     doc.on('error', reject);
 
     const pageWidth = doc.page.width;
-    const contentWidth = pageWidth - 80;
-    const col1 = 40;
-    const col2 = pageWidth / 2;
+    const contentWidth = pageWidth - 100;
+    const margin = 50;
 
-    // Header gradient bar
-    doc.rect(0, 0, pageWidth, 90).fill('#6366f1');
-    doc.rect(0, 90, pageWidth, 4).fill('#c0c1ff');
+    // ── Header ──
+    doc.font('Helvetica-Bold').fontSize(18).fillColor('#1e293b')
+      .text('Ticket Manager', margin, 40, { width: contentWidth, align: 'center' });
+    doc.font('Helvetica').fontSize(11).fillColor('#64748b')
+      .text(`Reporte del Dashboard  •  ${date}`, margin, 64, { width: contentWidth, align: 'center' });
 
-    doc.font('Helvetica-Bold').fontSize(22).fillColor('#1000a9').text('Ticket Manager', 40, 22);
-    doc.font('Helvetica').fontSize(11).fillColor('#0d0096').text(`Reporte del Dashboard  •  ${date}`, 40, 48);
+    // Thin divider
+    doc.strokeColor('#e2e8f0').lineWidth(1)
+      .moveTo(margin, 90).lineTo(pageWidth - margin, 90).stroke();
 
-    let y = 120;
+    let y = 115;
 
-    // KPI cards
+    // ── KPIs Row ──
     const kpiData = [
-      { label: 'Total', value: stats.total, bg: '#6366f111', border: '#6366f122', text: '#c0c1ff' },
-      { label: 'Abiertos', value: stats.open, bg: '#F59E0B11', border: '#F59E0B22', text: '#F59E0B' },
-      { label: 'En Progreso', value: stats.inProgress, bg: '#6366f111', border: '#6366f122', text: '#6366f1' },
-      { label: 'Cerrados', value: stats.closed, bg: '#10B98111', border: '#10B98122', text: '#10B981' },
+      { label: 'Total', value: stats.total, color: '#6366f1' },
+      { label: 'Abiertos', value: stats.open, color: '#F59E0B' },
+      { label: 'En Progreso', value: stats.inProgress, color: '#6366f1' },
+      { label: 'Cerrados', value: stats.closed, color: '#10B981' },
     ];
 
-    const kpiWidth = (contentWidth - 36) / 4;
+    const kpiSpacing = contentWidth / 4;
     kpiData.forEach((kpi, i) => {
-      const x = 40 + i * (kpiWidth + 12);
-      doc.roundedRect(x, y, kpiWidth, 70, 8).fill(kpi.bg);
-      doc.roundedRect(x, y, kpiWidth, 70, 8).stroke(kpi.border);
-      doc.font('Helvetica').fontSize(9).fillColor('#908fa0').text(kpi.label.toUpperCase(), x, y + 12, { width: kpiWidth, align: 'center' });
-      doc.font('Helvetica-Bold').fontSize(26).fillColor(kpi.text).text(String(kpi.value), x, y + 26, { width: kpiWidth, align: 'center' });
+      const x = margin + i * kpiSpacing;
+      doc.font('Helvetica-Bold').fontSize(32).fillColor(kpi.color)
+        .text(String(kpi.value), x, y, { width: kpiSpacing, align: 'center' });
+      doc.font('Helvetica').fontSize(11).fillColor('#64748b')
+        .text(kpi.label, x, y + 42, { width: kpiSpacing, align: 'center' });
     });
 
-    y += 90;
+    y += 75;
 
-    // Resolution rate
-    doc.roundedRect(40, y, contentWidth, 36, 8).fill('#10B98111');
-    doc.roundedRect(40, y, contentWidth, 36, 8).stroke('#10B98122');
-    doc.font('Helvetica-Bold').fontSize(12).fillColor('#10B981')
-      .text(`Tasa de Resolucion: ${stats.resolutionRate}%`, 40, y + 10, { width: contentWidth, align: 'center' });
+    // ── Resolution Rate ──
+    const barWidth = contentWidth - 60;
+    const barHeight = 6;
+    const filledWidth = (barWidth * stats.resolutionRate) / 100;
 
-    y += 56;
+    doc.font('Helvetica').fontSize(10).fillColor('#64748b')
+      .text('Tasa de resolucion', margin, y);
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#10B981')
+      .text(`${stats.resolutionRate}%`, pageWidth - margin, y, { width: 50, align: 'right' });
 
-    // Recent tickets title
-    doc.font('Helvetica-Bold').fontSize(16).fillColor('#e4e1ed').text('Tickets Recientes', 40, y);
-    y += 30;
+    y += 22;
+
+    // Background bar
+    doc.roundedRect(margin, y, barWidth, barHeight, 3).fill('#f1f5f9');
+    // Filled bar
+    doc.roundedRect(margin, y, filledWidth, barHeight, 3).fill('#10B981');
+
+    y += 25;
+
+    // Thin divider
+    doc.strokeColor('#e2e8f0').lineWidth(1)
+      .moveTo(margin, y).lineTo(pageWidth - margin, y).stroke();
+    y += 20;
+
+    // ── Recent Tickets ──
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#1e293b').text('Tickets Recientes', margin, y);
+    y += 25;
+
+    // Column positions
+    const colTitle = margin;
+    const colPriority = margin + 300;
+    const colStatus = margin + 400;
+    const colDate = pageWidth - margin;
 
     // Table header
-    const thY = y;
-    doc.rect(40, y, contentWidth, 28).fill('#0f172a');
-    doc.font('Helvetica-Bold').fontSize(9).fillColor('#908fa0');
-    doc.text('TICKET', 52, y + 8);
-    doc.text('PRIORIDAD', col2 - 30, y + 8);
-    doc.text('ESTADO', col2 + 70, y + 8);
-    doc.text('CREADO', pageWidth - 40, y + 8, { width: 120, align: 'right' });
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#94a3b8');
+    doc.text('TICKET', colTitle, y);
+    doc.text('PRIORIDAD', colPriority, y);
+    doc.text('ESTADO', colStatus, y);
+    doc.text('CREADO', colDate, y, { width: 100, align: 'right' });
 
-    y += 32;
+    y += 16;
 
-    // Table rows
+    // Header underline
+    doc.strokeColor('#e2e8f0').lineWidth(0.5)
+      .moveTo(margin, y).lineTo(pageWidth - margin, y).stroke();
+    y += 8;
+
     if (stats.recent.length === 0) {
-      doc.font('Helvetica').fontSize(11).fillColor('#64748b').text('No hay tickets recientes', 40, y + 20, { width: contentWidth, align: 'center' });
+      y += 20;
+      doc.font('Helvetica').fontSize(11).fillColor('#94a3b8')
+        .text('No hay tickets recientes', margin, y, { width: contentWidth, align: 'center' });
     } else {
       stats.recent.forEach((ticket, i) => {
-        const rowY = y;
-        if (y > doc.page.height - 100) {
+        if (y > doc.page.height - 80) {
           doc.addPage();
-          y = 40;
+          y = 50;
         }
 
-        if (i % 2 === 1) {
-          doc.rect(40, y, contentWidth, 32).fill('#1e293b44');
+        y += 4;
+
+        // Alternating row background
+        if (i % 2 === 0) {
+          doc.roundedRect(margin - 4, y - 2, contentWidth + 8, 26, 4).fill('#fafbfc');
         }
 
         // Title
-        const titleText = ticket.title.length > 45 ? ticket.title.substring(0, 42) + '...' : ticket.title;
-        doc.font('Helvetica').fontSize(10).fillColor('#e4e1ed').text(titleText, 52, y + 8);
+        doc.font('Helvetica').fontSize(10).fillColor('#334155');
+        const titleText = ticket.title.length > 48 ? ticket.title.substring(0, 45) + '...' : ticket.title;
+        doc.text(titleText, colTitle + 4, y);
 
-        // Priority pill
+        // Priority with colored dot
         const pColor = priorityColor(ticket.priority);
-        const pLabel = priorityLabel(ticket.priority);
-        const pWidth = doc.widthOfString(pLabel) + 20;
-        doc.roundedRect(col2 - 30, y + 6, pWidth, 20, 10).fill(`${pColor}22`);
-        doc.font('Helvetica-Bold').fontSize(8).fillColor(pColor).text(pLabel.toUpperCase(), col2 - 30 + pWidth / 2, y + 11, { width: 100, align: 'center' });
+        doc.circle(colPriority + 6, y + 6, 4).fill(pColor);
+        doc.font('Helvetica').fontSize(10).fillColor('#475569').text(priorityLabel(ticket.priority), colPriority + 16, y);
 
-        // Status pill
+        // Status with colored dot
         const sColor = statusColor(ticket.status);
-        const sLabel = statusLabel(ticket.status);
-        const sWidth = doc.widthOfString(sLabel) + 20;
-        doc.roundedRect(col2 + 70, y + 6, sWidth, 20, 10).fill(`${sColor}22`);
-        doc.font('Helvetica-Bold').fontSize(8).fillColor(sColor).text(sLabel.toUpperCase(), col2 + 70 + sWidth / 2, y + 11, { width: 100, align: 'center' });
+        doc.circle(colStatus + 6, y + 6, 4).fill(sColor);
+        doc.font('Helvetica').fontSize(10).fillColor('#475569').text(statusLabel(ticket.status), colStatus + 16, y);
 
-        // Created date
-        doc.font('Helvetica').fontSize(9).fillColor('#c7c4d7').text(ticket.createdAt, pageWidth - 40, y + 8, { width: 120, align: 'right' });
+        // Date
+        doc.font('Helvetica').fontSize(10).fillColor('#94a3b8').text(ticket.createdAt, colDate, y, { width: 120, align: 'right' });
 
-        y += 32;
+        y += 26;
       });
     }
 
-    // Footer
-    const pageBottom = doc.page.height - 40;
-    doc.strokeColor('#334155').lineWidth(1).moveTo(40, pageBottom - 10).lineTo(pageWidth - 40, pageBottom - 10).stroke();
-    doc.font('Helvetica').fontSize(9).fillColor('#64748b').text('Ticket Manager • Reporte generado automaticamente', 40, pageBottom + 2, { width: contentWidth, align: 'center' });
+    // ── Footer ──
+    const pageBottom = doc.page.height - 50;
+    doc.strokeColor('#e2e8f0').lineWidth(0.5)
+      .moveTo(margin, pageBottom - 10).lineTo(pageWidth - margin, pageBottom - 10).stroke();
+    doc.font('Helvetica').fontSize(8).fillColor('#cbd5e1')
+      .text('Ticket Manager  •  Reporte generado automaticamente', margin, pageBottom + 2, { width: contentWidth, align: 'center' });
 
     doc.end();
   });
