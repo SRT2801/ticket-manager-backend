@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ReportsService } from './reports.service';
 import { MailService } from '../mail/mail.service';
+import { UsersService } from '../users/users.service';
 import { UserRole } from '../../common/enums/user-role.enum';
 
 function formatDate(date: Date): string {
@@ -21,37 +22,41 @@ export class ReportsScheduler {
   constructor(
     private readonly reportsService: ReportsService,
     private readonly mailService: MailService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Cron('0 8 * * 1')
   async sendWeeklyReport() {
-    this.logger.log('Generando reporte semanal de tickets...');
-
-    const recipients = (process.env.REPORT_RECIPIENTS || '')
-      .split(',')
-      .map((e) => e.trim())
-      .filter(Boolean);
-
-    if (recipients.length === 0) {
-      this.logger.warn('REPORT_RECIPIENTS no configurado. Reporte no enviado.');
-      return;
-    }
+    this.logger.log('Generando reportes semanales por usuario...');
 
     try {
-      const buffer = await this.reportsService.exportTickets(
-        1,
-        UserRole.ADMIN,
-        {},
-      );
+      const users = await this.usersService.findAll();
+
+      if (users.length === 0) {
+        this.logger.warn('No hay usuarios registrados. Reporte no enviado.');
+        return;
+      }
 
       const date = formatDate(new Date());
 
-      for (const recipient of recipients) {
-        await this.mailService.sendExcelReport(recipient, buffer, date);
-        this.logger.log(`Reporte enviado a ${recipient}`);
+      for (const user of users) {
+        try {
+          const buffer = await this.reportsService.exportTickets(
+            user.id,
+            UserRole.USER,
+            {},
+          );
+
+          await this.mailService.sendExcelReport(user.email, buffer, date);
+          this.logger.log(`Reporte enviado a ${user.email}`);
+        } catch (error) {
+          this.logger.error(`Error enviando reporte a ${user.email}:`, error);
+        }
       }
+
+      this.logger.log(`Reportes semanales completados. ${users.length} usuarios.`);
     } catch (error) {
-      this.logger.error('Error al enviar reporte semanal:', error);
+      this.logger.error('Error al generar reportes semanales:', error);
     }
   }
 }
