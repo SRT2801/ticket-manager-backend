@@ -25,7 +25,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<AuthResponseDto> {
+  async register(dto: RegisterDto): Promise<UserProfile> {
     const existingUser = await this.usersService.findByEmail(dto.email);
     if (existingUser) {
       throw new ConflictException('Email already exists');
@@ -38,18 +38,13 @@ export class AuthService {
       role: UserRole.USER,
     });
 
-    const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role };
-    const profile: UserProfile = { id: user.id, email: user.email, name: user.name, role: user.role };
-    return {
-      accessToken: this.jwtService.sign(payload),
-      user: profile,
-    };
+    return { id: user.id, email: user.email, name: user.name, role: user.role };
   }
 
   async registerAdmin(
     dto: RegisterAdminDto,
     requestingUser: CurrentUserPayload,
-  ): Promise<AuthResponseDto> {
+  ): Promise<UserProfile> {
     if (requestingUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can create other admins');
     }
@@ -71,12 +66,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role };
-    const profile: UserProfile = { id: user.id, email: user.email, name: user.name, role: user.role };
-    return {
-      accessToken: this.jwtService.sign(payload),
-      user: profile,
-    };
+    return { id: user.id, email: user.email, name: user.name, role: user.role };
   }
 
   async login(dto: LoginDto): Promise<AuthResponseDto> {
