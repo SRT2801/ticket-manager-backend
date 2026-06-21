@@ -115,6 +115,7 @@ export class TicketsService {
   ): Promise<TicketResponseDto> {
     const ticket = await this.ticketsRepository.findOne({
       where: { id: ticketId },
+      relations: { user: true },
     });
 
     if (!ticket) {
