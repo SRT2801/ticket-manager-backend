@@ -6,6 +6,7 @@ import { UsersModule } from './modules/users/users.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { MailModule } from './modules/mail/mail.module';
 import { databaseConfig } from './database/database.config';
 import { jwtConfig } from './config/auth/jwt.config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -21,6 +22,7 @@ import { User } from './modules/users/entities/user.entity';
     UsersModule,
     TicketsModule,
     ReportsModule,
+    MailModule,
   ],
   controllers: [],
   providers: [
