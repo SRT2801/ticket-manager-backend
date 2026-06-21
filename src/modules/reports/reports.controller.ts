@@ -89,7 +89,6 @@ export class ReportsController {
         })),
       },
       date,
-      user.name,
     );
 
     return { message: 'Reporte enviado correctamente', to: dto.email };

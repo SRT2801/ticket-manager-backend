@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import PDFDocument from 'pdfkit';
 
 interface DashboardStats {
   total: number;
@@ -35,109 +36,122 @@ function statusColor(status: string): string {
   return map[status] || '#908fa0';
 }
 
-function buildDashboardHtml(stats: DashboardStats, date: string): string {
-  const ticketRows = stats.recent.length > 0
-    ? stats.recent.map((t) => `
-      <tr style="border-bottom:1px solid #1e293b">
-        <td style="padding:12px;color:#e4e1ed;font-size:13px">${t.title}</td>
-        <td style="padding:12px;text-align:center">
-          <span style="background:${priorityColor(t.priority)}22;color:${priorityColor(t.priority)};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">${priorityLabel(t.priority)}</span>
-        </td>
-        <td style="padding:12px;text-align:center">
-          <span style="background:${statusColor(t.status)}22;color:${statusColor(t.status)};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">${statusLabel(t.status)}</span>
-        </td>
-        <td style="padding:12px;color:#c7c4d7;font-size:12px;text-align:right">${t.createdAt}</td>
-      </tr>
-    `).join('')
-    : '<tr><td colspan="4" style="padding:24px;text-align:center;color:#64748b">No hay tickets recientes</td></tr>';
+function generateDashboardPdf(stats: DashboardStats, date: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const doc = new PDFDocument({
+      size: 'A4',
+      margin: 40,
+      bufferPages: true,
+    });
 
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-</head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:Arial,Helvetica,sans-serif;color:#e4e1ed">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:40px 0">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#1e293b;border-radius:16px;overflow:hidden">
-        <!-- Header -->
-        <tr>
-          <td style="background:linear-gradient(135deg,#6366f1,#c0c1ff);padding:32px;text-align:center">
-            <h1 style="margin:0;font-size:24px;color:#1000a9;font-weight:700">Ticket Manager</h1>
-            <p style="margin:8px 0 0;font-size:14px;color:#0d0096;opacity:0.8">Reporte del Dashboard &bull; ${date}</p>
-          </td>
-        </tr>
-        <!-- KPIs -->
-        <tr>
-          <td style="padding:24px 24px 0">
-            <table width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td width="25%" style="padding:0 8px 0 0" valign="top">
-                  <div style="background:#6366f111;border:1px solid #6366f122;border-radius:12px;padding:16px;text-align:center">
-                    <p style="margin:0;font-size:11px;color:#908fa0;text-transform:uppercase;letter-spacing:0.5px">Total</p>
-                    <p style="margin:8px 0 0;font-size:28px;font-weight:700;color:#c0c1ff">${stats.total}</p>
-                  </div>
-                </td>
-                <td width="25%" style="padding:0 8px" valign="top">
-                  <div style="background:#F59E0B11;border:1px solid #F59E0B22;border-radius:12px;padding:16px;text-align:center">
-                    <p style="margin:0;font-size:11px;color:#908fa0;text-transform:uppercase;letter-spacing:0.5px">Abiertos</p>
-                    <p style="margin:8px 0 0;font-size:28px;font-weight:700;color:#F59E0B">${stats.open}</p>
-                  </div>
-                </td>
-                <td width="25%" style="padding:0 8px" valign="top">
-                  <div style="background:#6366f111;border:1px solid #6366f122;border-radius:12px;padding:16px;text-align:center">
-                    <p style="margin:0;font-size:11px;color:#908fa0;text-transform:uppercase;letter-spacing:0.5px">En Progreso</p>
-                    <p style="margin:8px 0 0;font-size:28px;font-weight:700;color:#6366f1">${stats.inProgress}</p>
-                  </div>
-                </td>
-                <td width="25%" style="padding:0 0 0 8px" valign="top">
-                  <div style="background:#10B98111;border:1px solid #10B98122;border-radius:12px;padding:16px;text-align:center">
-                    <p style="margin:0;font-size:11px;color:#908fa0;text-transform:uppercase;letter-spacing:0.5px">Cerrados</p>
-                    <p style="margin:8px 0 0;font-size:28px;font-weight:700;color:#10B981">${stats.closed}</p>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <!-- Resolution Rate -->
-        <tr>
-          <td style="padding:16px 24px">
-            <div style="background:#10B98111;border:1px solid #10B98122;border-radius:12px;padding:16px;text-align:center">
-              <p style="margin:0;font-size:13px;color:#10B981;font-weight:600">Tasa de Resolucion: <span style="font-size:20px">${stats.resolutionRate}%</span></p>
-            </div>
-          </td>
-        </tr>
-        <!-- Recent Tickets Table -->
-        <tr>
-          <td style="padding:24px">
-            <h2 style="margin:0 0 16px;font-size:18px;color:#e4e1ed">Tickets Recientes</h2>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
-              <thead>
-                <tr style="background:#0f172a;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;color:#908fa0">
-                  <th style="padding:12px;text-align:left;border-radius:8px 0 0 0">Ticket</th>
-                  <th style="padding:12px;text-align:center">Prioridad</th>
-                  <th style="padding:12px;text-align:center">Estado</th>
-                  <th style="padding:12px;text-align:right;border-radius:0 8px 0 0">Creado</th>
-                </tr>
-              </thead>
-              <tbody>${ticketRows}</tbody>
-            </table>
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="padding:24px;border-top:1px solid #334155;text-align:center">
-            <p style="margin:0;font-size:12px;color:#64748b">Ticket Manager &bull; Reporte generado automaticamente</p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const pageWidth = doc.page.width;
+    const contentWidth = pageWidth - 80;
+    const col1 = 40;
+    const col2 = pageWidth / 2;
+
+    // Header gradient bar
+    doc.rect(0, 0, pageWidth, 90).fill('#6366f1');
+    doc.rect(0, 90, pageWidth, 4).fill('#c0c1ff');
+
+    doc.font('Helvetica-Bold').fontSize(22).fillColor('#1000a9').text('Ticket Manager', 40, 22);
+    doc.font('Helvetica').fontSize(11).fillColor('#0d0096').text(`Reporte del Dashboard  •  ${date}`, 40, 48);
+
+    let y = 120;
+
+    // KPI cards
+    const kpiData = [
+      { label: 'Total', value: stats.total, bg: '#6366f111', border: '#6366f122', text: '#c0c1ff' },
+      { label: 'Abiertos', value: stats.open, bg: '#F59E0B11', border: '#F59E0B22', text: '#F59E0B' },
+      { label: 'En Progreso', value: stats.inProgress, bg: '#6366f111', border: '#6366f122', text: '#6366f1' },
+      { label: 'Cerrados', value: stats.closed, bg: '#10B98111', border: '#10B98122', text: '#10B981' },
+    ];
+
+    const kpiWidth = (contentWidth - 36) / 4;
+    kpiData.forEach((kpi, i) => {
+      const x = 40 + i * (kpiWidth + 12);
+      doc.roundedRect(x, y, kpiWidth, 70, 8).fill(kpi.bg);
+      doc.roundedRect(x, y, kpiWidth, 70, 8).stroke(kpi.border);
+      doc.font('Helvetica').fontSize(9).fillColor('#908fa0').text(kpi.label.toUpperCase(), x, y + 12, { width: kpiWidth, align: 'center' });
+      doc.font('Helvetica-Bold').fontSize(26).fillColor(kpi.text).text(String(kpi.value), x, y + 26, { width: kpiWidth, align: 'center' });
+    });
+
+    y += 90;
+
+    // Resolution rate
+    doc.roundedRect(40, y, contentWidth, 36, 8).fill('#10B98111');
+    doc.roundedRect(40, y, contentWidth, 36, 8).stroke('#10B98122');
+    doc.font('Helvetica-Bold').fontSize(12).fillColor('#10B981')
+      .text(`Tasa de Resolucion: ${stats.resolutionRate}%`, 40, y + 10, { width: contentWidth, align: 'center' });
+
+    y += 56;
+
+    // Recent tickets title
+    doc.font('Helvetica-Bold').fontSize(16).fillColor('#e4e1ed').text('Tickets Recientes', 40, y);
+    y += 30;
+
+    // Table header
+    const thY = y;
+    doc.rect(40, y, contentWidth, 28).fill('#0f172a');
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#908fa0');
+    doc.text('TICKET', 52, y + 8);
+    doc.text('PRIORIDAD', col2 - 30, y + 8);
+    doc.text('ESTADO', col2 + 70, y + 8);
+    doc.text('CREADO', pageWidth - 40, y + 8, { width: 120, align: 'right' });
+
+    y += 32;
+
+    // Table rows
+    if (stats.recent.length === 0) {
+      doc.font('Helvetica').fontSize(11).fillColor('#64748b').text('No hay tickets recientes', 40, y + 20, { width: contentWidth, align: 'center' });
+    } else {
+      stats.recent.forEach((ticket, i) => {
+        const rowY = y;
+        if (y > doc.page.height - 100) {
+          doc.addPage();
+          y = 40;
+        }
+
+        if (i % 2 === 1) {
+          doc.rect(40, y, contentWidth, 32).fill('#1e293b44');
+        }
+
+        // Title
+        const titleText = ticket.title.length > 45 ? ticket.title.substring(0, 42) + '...' : ticket.title;
+        doc.font('Helvetica').fontSize(10).fillColor('#e4e1ed').text(titleText, 52, y + 8);
+
+        // Priority pill
+        const pColor = priorityColor(ticket.priority);
+        const pLabel = priorityLabel(ticket.priority);
+        const pWidth = doc.widthOfString(pLabel) + 20;
+        doc.roundedRect(col2 - 30, y + 6, pWidth, 20, 10).fill(`${pColor}22`);
+        doc.font('Helvetica-Bold').fontSize(8).fillColor(pColor).text(pLabel.toUpperCase(), col2 - 30 + pWidth / 2, y + 11, { width: 100, align: 'center' });
+
+        // Status pill
+        const sColor = statusColor(ticket.status);
+        const sLabel = statusLabel(ticket.status);
+        const sWidth = doc.widthOfString(sLabel) + 20;
+        doc.roundedRect(col2 + 70, y + 6, sWidth, 20, 10).fill(`${sColor}22`);
+        doc.font('Helvetica-Bold').fontSize(8).fillColor(sColor).text(sLabel.toUpperCase(), col2 + 70 + sWidth / 2, y + 11, { width: 100, align: 'center' });
+
+        // Created date
+        doc.font('Helvetica').fontSize(9).fillColor('#c7c4d7').text(ticket.createdAt, pageWidth - 40, y + 8, { width: 120, align: 'right' });
+
+        y += 32;
+      });
+    }
+
+    // Footer
+    const pageBottom = doc.page.height - 40;
+    doc.strokeColor('#334155').lineWidth(1).moveTo(40, pageBottom - 10).lineTo(pageWidth - 40, pageBottom - 10).stroke();
+    doc.font('Helvetica').fontSize(9).fillColor('#64748b').text('Ticket Manager • Reporte generado automaticamente', 40, pageBottom + 2, { width: contentWidth, align: 'center' });
+
+    doc.end();
+  });
 }
 
 @Injectable()
@@ -160,15 +174,21 @@ export class MailService {
     email: string,
     stats: DashboardStats,
     date: string,
-    userName?: string,
   ): Promise<void> {
-    const html = buildDashboardHtml(stats, date);
+    const pdfBuffer = await generateDashboardPdf(stats, date);
 
     await this.transporter.sendMail({
       from: process.env.MAIL_FROM || 'noreply@ticket-manager.com',
       to: email,
       subject: `Ticket Manager — Reporte ${date}`,
-      html,
+      text: 'Adjunto encontraras el reporte del dashboard de Ticket Manager.',
+      attachments: [
+        {
+          filename: `dashboard-report-${new Date().toISOString().split('T')[0]}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        },
+      ],
     });
   }
 }
