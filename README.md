@@ -8,8 +8,11 @@ Sistema de gestión de tickets de soporte con reportería en Excel. Backend desa
 - **TypeORM** (ORM con migraciones)
 - **PostgreSQL 16** (base de datos)
 - **JWT** (autenticación sin estado)
-- **ExcelJS** (generación de reportes `.xlsx`)
-- **Swagger** (documentación de API)
+- **ExcelJS** (generacion de reportes `.xlsx`)
+- **Nodemailer** (envio de correos)
+- **PDFKit** (generacion de PDFs)
+- **@nestjs/schedule** (tareas programadas)
+- **Swagger** (documentacion de API)
 - **Docker Compose** (entorno de desarrollo)
 
 ## Requisitos
@@ -45,6 +48,11 @@ Editar `.env` si es necesario. Las credenciales por defecto son:
 | `PORT` | `3000` | |
 | `ADMIN_EMAIL` | `admin@ticket-manager.com` | |
 | `ADMIN_PASSWORD` | `Admin123!` | |
+| `MAIL_HOST` | `smtp.gmail.com` | Servidor SMTP |
+| `MAIL_PORT` | `587` | Puerto SMTP |
+| `MAIL_USER` | (requerido) | Email del remitente |
+| `MAIL_PASS` | (requerido) | App password de Gmail |
+| `MAIL_FROM` | `noreply@ticket-manager.com` | Remitente del correo |
 
 > **Importante:** El `docker-compose.yml` sobrescribe `DATABASE_HOST=postgres` al ejecutar en Docker.
 > No modifiques `.env` para Docker — el compose se encarga de los valores correctos para el contenedor.
@@ -85,8 +93,8 @@ npm run start:dev
 
 Al iniciar la aplicación, se crea automáticamente un usuario administrador:
 
-- **Email:** `admin@ticket-manager.com`
-- **Password:** `Admin123!`
+- **Email:** `admin@example.com`
+- **Password:** `admin123`
 
 ## Documentación Swagger
 
@@ -126,15 +134,26 @@ Disponible en: `http://localhost:3000/api/docs`
 
 ### Reports
 
-| Método | Endpoint | Auth | Descripción |
+| Metodo | Endpoint | Auth | Descripcion |
 |--------|----------|------|-------------|
 | GET | `/reports/tickets/export` | JWT | Exportar tickets a Excel (.xlsx) |
 | GET | `/reports/tickets/:id/export` | JWT | Exportar detalle de un ticket |
+| POST | `/reports/send-dashboard` | JWT | Enviar reporte Excel por correo |
 
-**Filtros para exportación:**
+**Filtros para exportacion:**
 - `status` — filtrar por estado
+- `priority` — filtrar por prioridad
 - `startDate` — fecha inicio (`YYYY-MM-DD`)
 - `endDate` — fecha fin (`YYYY-MM-DD`)
+
+### Reportes programados
+
+El sistema envia automaticamente un reporte Excel semanal a cada usuario registrado:
+
+- **Frecuencia**: Cada lunes a las 8:00 AM
+- **Que incluye**: Solo los tickets del usuario (exportados con ExcelJS, mismo formato que `/reports/tickets/export`)
+- **Requisito**: Variables SMTP configuradas (`MAIL_USER`, `MAIL_PASS`)
+- **Logs**: El scheduler registra en consola el progreso y errores por usuario
 
 ## Roles y permisos
 
@@ -159,8 +178,9 @@ src/
 ├── modules/
 │   ├── auth/            # Autenticación (registro, login, JWT)
 │   ├── users/           # Perfil de usuario
-│   ├── tickets/         # CRUD de tickets + estadísticas
-│   └── reports/         # Exportación a Excel
+│   ├── tickets/         # CRUD de tickets + estadisticas
+│   ├── reports/          # Exportacion a Excel + envio por correo + scheduler
+│   └── mail/             # Servicio de envio de correos
 ├── app.module.ts
 └── main.ts
 ```
@@ -173,7 +193,9 @@ src/
 - **Formato estandarizado de respuestas** con `ResponseInterceptor`: `{ statusCode, message, data, timestamp, path }`.
 - **Migraciones TypeORM** en lugar de `synchronize: true` (entorno productivo).
 - **Seed automático** del admin al iniciar la aplicación.
-- **Módulo `reports` separado** — la lógica de exportación Excel está aislada del módulo de tickets.
+- **Modulo `reports` separado** — la logica de exportacion Excel y envio de correos esta aislada del modulo de tickets.
+- **Modulo `mail`** — servicio reutilizable para envio de correos con Nodemailer + SMTP.
+- **Scheduler semanal** — `@nestjs/schedule` con cron `0 8 * * 1` envia reportes Excel personalizados a cada usuario.
 
 ## Reportes Excel
 
