@@ -98,7 +98,13 @@ Al iniciar la aplicación, se crea automáticamente un usuario administrador:
 
 ## Documentación Swagger
 
-Disponible en: `http://localhost:3000/api/docs`
+Disponible en: `http://localhost:3000/api`
+
+## Despliegue
+
+- **Backend (Railway):** [ticket-manager-backend-production.up.railway.app](https://ticket-manager-backend-production.up.railway.app)
+- **Swagger:** [ticket-manager-backend-production.up.railway.app/api](https://ticket-manager-backend-production.up.railway.app/api)
+- **Frontend (Vercel):** [ticket-manager-frontend-ten.vercel.app](https://ticket-manager-frontend-ten.vercel.app/login)
 
 ## Endpoints
 
