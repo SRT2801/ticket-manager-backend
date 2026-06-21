@@ -2,9 +2,6 @@ import { User } from '../modules/users/entities/user.entity';
 import { Ticket } from '../modules/tickets/entities/ticket.entity';
 
 export const databaseConfig = () => {
-  console.log('DATABASE_HOST=', process.env.DATABASE_HOST);
-  console.log('DATABASE_PORT=', process.env.DATABASE_PORT);
-
   return {
     type: 'postgres' as const,
     host: process.env.DATABASE_HOST,
